@@ -17,7 +17,7 @@ func ParseFlag() (bool, bool, bool, string) {
 
 	flag.Parse()
 
-	if !*flagFile {
+	if !*flagFile && *flagEXT != "" {
 		*flagEXT = ""
 		fmt.Println("Usage: ~$ ./myFind -f -ext 'go' /go")
 		os.Exit(1)
@@ -32,45 +32,12 @@ func ParseFlag() (bool, bool, bool, string) {
 	return *flagFile, *flagDir, *flagLink, *flagEXT
 }
 
-// readDir - открытие и чтение директории
-func readDir(directoryPath string) []os.FileInfo {
-	dir, err := os.Open(directoryPath)
-	if err != nil {
-		fmt.Println("Не удалось открыть директорию", directoryPath)
-		os.Exit(1)
-	}
-
-	defer func() {
-		if err := dir.Close(); err != nil {
-			fmt.Println("Ошибка при закрытии директории:", err)
-		}
-	}()
-
-	files, err := dir.Readdir(-1)
-	if err != nil {
-		fmt.Println("Ошибка чтения содержимого директории", err)
-	}
-
-	return files
-}
-
-// processSymlink - Функция для обработки символических ссылок
-func processSymlink(fullPath string) {
-	linkTarget, err := os.Readlink(fullPath)
-	if err != nil {
-		fmt.Printf("%s -> [broken]\n", fullPath)
-	} else {
-		// Проверка, существует ли целевой объект ссылки
-		if _, err := os.Stat(fullPath); os.IsNotExist(err) {
-			fmt.Printf("%s -> [broken]\n", fullPath)
-		} else {
-			fmt.Printf("%s -> %s\n", fullPath, linkTarget)
-		}
-	}
-}
-
 func Finder(directoryPath string, flagF, flagD, flagSL bool, flagEXT string) {
 	files := readDir(directoryPath)
+
+	if files == nil {
+		return
+	}
 
 	for _, file := range files {
 		fullPath := filepath.Join(directoryPath, file.Name())
@@ -78,6 +45,11 @@ func Finder(directoryPath string, flagF, flagD, flagSL bool, flagEXT string) {
 		// Получение информации о файле или символической ссылке
 		fileInfo, err := os.Lstat(fullPath)
 		if err != nil {
+			if os.IsPermission(err) {
+				// Пропускаем файлы с ошибками доступа
+				fmt.Println("Пропущен файл из-за недостаточных прав:", fullPath)
+				continue
+			}
 			fmt.Println("Ошибка получения информации о файле:", err)
 			continue
 		}
@@ -108,4 +80,51 @@ func Finder(directoryPath string, flagF, flagD, flagSL bool, flagEXT string) {
 		}
 	}
 
+}
+
+// readDir - открытие и чтение директории
+func readDir(directoryPath string) []os.FileInfo {
+	dir, err := os.Open(directoryPath)
+	if err != nil {
+		if os.IsPermission(err) {
+			// Пропускаем директорию, если нет доступа
+			fmt.Println("Пропущена директория из-за недостаточных прав:", directoryPath)
+			return nil
+		}
+		fmt.Println("Не удалось открыть директорию", directoryPath)
+		os.Exit(1)
+	}
+
+	defer func() {
+		if err := dir.Close(); err != nil {
+			fmt.Println("Ошибка при закрытии директории:", err)
+		}
+	}()
+
+	files, err := dir.Readdir(-1)
+	if err != nil {
+		if os.IsPermission(err) {
+			// Пропускаем чтение содержимого директории, если нет доступа
+			fmt.Println("Пропущено чтение содержимого директории из-за недостаточных прав:", directoryPath)
+			return nil
+		}
+		fmt.Println("Ошибка чтения содержимого директории", err)
+	}
+
+	return files
+}
+
+// processSymlink - Функция для обработки символических ссылок
+func processSymlink(fullPath string) {
+	linkTarget, err := os.Readlink(fullPath)
+	if err != nil {
+		fmt.Printf("%s -> [broken]\n", fullPath)
+	} else {
+		// Проверка, существует ли целевой объект ссылки
+		if _, err := os.Stat(fullPath); os.IsNotExist(err) {
+			fmt.Printf("%s -> [broken]\n", fullPath)
+		} else {
+			fmt.Printf("%s -> %s\n", fullPath, linkTarget)
+		}
+	}
 }
