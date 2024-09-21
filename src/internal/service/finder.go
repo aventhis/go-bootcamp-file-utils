@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 )
 
-func Finder(directoryPath string, flagF, flagD, flagSL bool) {
+func readDir(directoryPath string) []os.FileInfo {
 	dir, err := os.Open(directoryPath)
 	if err != nil {
 		fmt.Println("Не удалось открыть директорию", directoryPath)
@@ -24,6 +24,12 @@ func Finder(directoryPath string, flagF, flagD, flagSL bool) {
 	if err != nil {
 		fmt.Println("Ошибка чтения содержимого директории", err)
 	}
+
+	return files
+}
+
+func Finder(directoryPath string, flagF, flagD, flagSL bool) {
+	files := readDir(directoryPath)
 
 	for _, file := range files {
 		fullPath := filepath.Join(directoryPath, file.Name())
