@@ -8,17 +8,28 @@ import (
 )
 
 // ParseFlag - парсинг флагов командной строки
-func ParseFlag() (bool, bool, bool) {
+func ParseFlag() (bool, bool, bool, string) {
 	flagFile := flag.Bool("f", false, "Флаг для отображения файлов")
 	flagDir := flag.Bool("d", false, "Флаг для отображения директорий")
 	flagLink := flag.Bool("sl", false, "Флаг для отображения символических ссылок")
+
+	flagEXT := flag.String("ext", "", "Флаг для отображения файлов с определенным расширением")
+
 	flag.Parse()
+
+	if !*flagFile {
+		*flagEXT = ""
+		fmt.Println("Usage: ~$ ./myFind -f -ext 'go' /go")
+		os.Exit(1)
+	}
+
 	if !*flagFile && !*flagDir && !*flagLink {
 		*flagFile = true
 		*flagDir = true
 		*flagLink = true
 	}
-	return *flagFile, *flagDir, *flagLink
+
+	return *flagFile, *flagDir, *flagLink, *flagEXT
 }
 
 // readDir - открытие и чтение директории
@@ -58,7 +69,7 @@ func processSymlink(fullPath string) {
 	}
 }
 
-func Finder(directoryPath string, flagF, flagD, flagSL bool) {
+func Finder(directoryPath string, flagF, flagD, flagSL bool, flagEXT string) {
 	files := readDir(directoryPath)
 
 	for _, file := range files {
@@ -84,9 +95,16 @@ func Finder(directoryPath string, flagF, flagD, flagSL bool) {
 			if flagD {
 				fmt.Println(fullPath)
 			}
-			Finder(fullPath, flagF, flagD, flagSL)
+			Finder(fullPath, flagF, flagD, flagSL, flagEXT)
 		} else if flagF {
-			fmt.Println(fullPath)
+			if flagEXT != "" {
+				ext := filepath.Ext(file.Name())
+				if ext == "."+flagEXT {
+					fmt.Println(fullPath)
+				}
+			} else {
+				fmt.Println(fullPath)
+			}
 		}
 	}
 
