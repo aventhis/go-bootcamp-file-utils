@@ -1,29 +1,30 @@
 package app
 
 import (
+	"flag"
 	"fmt"
+	"github.com/aventhis/go-bootcamp-file-utils/src/internal/service"
 	"os"
 )
 
-//func parseFlag() (bool, bool, bool) {
-//	flagFile := flag.Bool("f", false, "Флаг для отображения файлов")
-//	flagDir := flag.Bool("d", false, "Флаг для отображения директорий")
-//	flagLink := flag.Bool("sl", false, "Флаг для отображения символических ссылок")
-//	flag.Parse()
-//	if !*flagFile && !*flagDir && !*flagLink {
-//		*flagFile = true
-//		*flagDir = true
-//		*flagLink = true
-//	}
-//	return *flagFile, *flagDir, *flagLink
-//}
-
 func MyFind() {
-	//flagF, flagD, flagSL := parseFlag()
-	if len(os.Args) < 2 {
-		fmt.Println("необходимо указать директорию\n Usage: ~$ ./myFind /foo")
+	flagF, flagD, flagSL := service.ParseFlag()
+	if flagF {
+		fmt.Println("file")
+	}
+	if flagD {
+		fmt.Println("dir")
+	}
+	if flagSL {
+		fmt.Println("sl")
+	}
+
+	args := flag.Args()
+	if len(args) < 1 {
+		fmt.Println("Необходимо указать директорию\nUsage: ~$ ./myFind /foo")
 		os.Exit(1)
 	}
-	directoryPath := os.Args[1]
+
+	directoryPath := args[0]
 	fmt.Println(directoryPath)
 }
