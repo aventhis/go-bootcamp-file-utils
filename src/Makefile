@@ -1,2 +1,2 @@
 myFind:
-	go run cmd/myFind/main.go
+	go run cmd/myFind/main.go /dataForTest
