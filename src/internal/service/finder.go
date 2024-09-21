@@ -79,7 +79,6 @@ func Finder(directoryPath string, flagF, flagD, flagSL bool, flagEXT string) {
 			}
 		}
 	}
-
 }
 
 // readDir - открытие и чтение директории
@@ -110,7 +109,6 @@ func readDir(directoryPath string) []os.FileInfo {
 		}
 		fmt.Println("Ошибка чтения содержимого директории", err)
 	}
-
 	return files
 }
 
