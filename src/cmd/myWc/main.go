@@ -1,29 +1,15 @@
 package main
 
 import (
-	"bufio"
-	"errors"
 	"flag"
 	"fmt"
-	"io"
+	"github.com/aventhis/go-bootcamp-file-utils/src/internal/service"
 	"os"
-	"strings"
 	"sync"
-	"unicode/utf8"
 )
 
 func main() {
-	flagW := flag.Bool("w", false, "Флаг для подсчета слов")
-	flagL := flag.Bool("l", false, "Флаг для подсчета строк")
-	flagM := flag.Bool("m", false, "Флаг для подсчета символов")
-
-	flag.Parse()
-
-	if *flagW && *flagL || *flagW && *flagM || *flagL && *flagM {
-		fmt.Println("Ошибка: может бытьь указан только один флаг")
-		fmt.Println("Usage: ./myWc -m input4.txt")
-		os.Exit(1)
-	}
+	flagW, flagL, flagM := service.ParseFlagMyWc()
 
 	files := flag.Args()
 
@@ -34,73 +20,21 @@ func main() {
 
 	//переопределяем функцию
 	var countFunc func(file *os.File) (int, error)
-	if *flagW {
-		countFunc = countWords
-	} else if *flagL {
-		countFunc = countStr
-	} else if *flagM {
-		countFunc = countChar
+	if flagW {
+		countFunc = service.CountWords
+	} else if flagL {
+		countFunc = service.CountStr
+	} else if flagM {
+		countFunc = service.CountChar
+	} else {
+		countFunc = service.CountWords
 	}
 
 	var wg sync.WaitGroup
 
 	for _, file := range files {
 		wg.Add(1)
-		go processFile(file, countFunc, &wg)
+		go service.ProcessFile(file, countFunc, &wg)
 	}
 	wg.Wait()
-}
-
-func processFile(filePath string, countFunc func(*os.File) (int, error), wg *sync.WaitGroup) {
-	file, err := os.Open(filePath)
-	if err != nil {
-		fmt.Println("Ошибка открытия файла", err)
-		return
-	}
-	defer func() {
-		if err := file.Close(); err != nil {
-			fmt.Println("Ошибка закрытия файла", err)
-			return
-		}
-	}()
-	defer wg.Done()
-
-	count, err := countFunc(file)
-	if err != nil {
-		fmt.Println("Ошибка обработки файла", filePath, err)
-		return
-	}
-
-	fmt.Printf("%d\t%s\n", count, filePath)
-
-}
-
-func countWords(file *os.File) (int, error) {
-	data, err := io.ReadAll(file)
-	if err != nil {
-		return -1, errors.New("ошибка чтения файла")
-	}
-
-	words := strings.Fields(string(data))
-	return len(words), nil
-}
-
-func countStr(file *os.File) (int, error) {
-	count := 0
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		count++
-	}
-	if err := scanner.Err(); err != nil {
-		return -1, err
-	}
-	return count, nil
-}
-
-func countChar(file *os.File) (int, error) {
-	data, err := io.ReadAll(file)
-	if err != nil {
-		return -1, errors.New("ошибка чтения файла")
-	}
-	return utf8.RuneCountInString(string(data)), nil
 }
