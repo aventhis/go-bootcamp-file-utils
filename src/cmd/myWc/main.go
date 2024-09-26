@@ -31,8 +31,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Println(files)
-
 	//переопределяем функцию
 	var countFunc func(file *os.File) (int, error)
 	if *flagW {
