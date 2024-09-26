@@ -19,6 +19,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	directoryPath := args[0]
-	service.Finder(directoryPath, flagF, flagD, flagSL, flagEXT)
+	root := args[0]
+
+	err := service.WalkDirectory(root, flagF, flagD, flagSL, flagEXT)
+	if err != nil {
+		fmt.Printf("Ошибка обхода директории: %v\n", err)
+	}
+
 }
