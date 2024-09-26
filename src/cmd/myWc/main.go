@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"strings"
+	"sync"
 	"unicode/utf8"
 )
 
@@ -41,13 +42,16 @@ func main() {
 		countFunc = countChar
 	}
 
-	for _, file := range files {
-		processFile(file, countFunc)
-	}
+	var wg sync.WaitGroup
 
+	for _, file := range files {
+		wg.Add(1)
+		go processFile(file, countFunc, &wg)
+	}
+	wg.Wait()
 }
 
-func processFile(filePath string, countFunc func(*os.File) (int, error)) {
+func processFile(filePath string, countFunc func(*os.File) (int, error), wg *sync.WaitGroup) {
 	file, err := os.Open(filePath)
 	if err != nil {
 		fmt.Println("Ошибка открытия файла", err)
@@ -59,6 +63,7 @@ func processFile(filePath string, countFunc func(*os.File) (int, error)) {
 			return
 		}
 	}()
+	defer wg.Done()
 
 	count, err := countFunc(file)
 	if err != nil {
