@@ -3,7 +3,6 @@ package service
 import (
 	"bufio"
 	"errors"
-	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -11,21 +10,6 @@ import (
 	"sync"
 	"unicode/utf8"
 )
-
-func ParseFlagWc() (bool, bool, bool) {
-	flagW := flag.Bool("w", false, "Флаг для подсчета слов")
-	flagL := flag.Bool("l", false, "Флаг для подсчета строк")
-	flagM := flag.Bool("m", false, "Флаг для подсчета символов")
-
-	flag.Parse()
-
-	if *flagW && *flagL || *flagW && *flagM || *flagL && *flagM {
-		fmt.Println("Ошибка: может быть указан только один флаг")
-		fmt.Println("Usage: ./myWc -m input4.txt")
-		os.Exit(1)
-	}
-	return *flagW, *flagL, *flagM
-}
 
 func ProcessFile(filePath string, countFunc func(*os.File) (int, error), wg *sync.WaitGroup) {
 	defer wg.Done()
@@ -49,7 +33,6 @@ func ProcessFile(filePath string, countFunc func(*os.File) (int, error), wg *syn
 	}
 
 	fmt.Printf("%d\t%s\n", count, filePath)
-
 }
 
 func CountWords(file *os.File) (int, error) {
@@ -68,10 +51,8 @@ func CountStr(file *os.File) (int, error) {
 	for scanner.Scan() {
 		count++
 	}
-	if err := scanner.Err(); err != nil {
-		return -1, err
-	}
-	return count, nil
+
+	return count, scanner.Err()
 }
 
 func CountChar(file *os.File) (int, error) {

@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	flagF, flagD, flagSL, flagEXT := service.ParseFlag()
+	flagF, flagD, flagSL, flagEXT := service.ParseFlagFind()
 
 	args := flag.Args()
 

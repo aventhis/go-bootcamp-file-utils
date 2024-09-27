@@ -12,13 +12,11 @@ func main() {
 	flagW, flagL, flagM := service.ParseFlagWc()
 
 	files := flag.Args()
-
 	if len(files) == 0 {
 		fmt.Println("Usage: ./myWc -m input4.txt input5.txt input6.txt")
 		os.Exit(1)
 	}
 
-	//переопределяем функцию
 	var countFunc func(file *os.File) (int, error)
 	if flagW {
 		countFunc = service.CountWords

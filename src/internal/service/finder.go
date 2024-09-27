@@ -1,36 +1,10 @@
 package service
 
 import (
-	"flag"
 	"fmt"
 	"os"
 	"path/filepath"
 )
-
-// ParseFlag - парсинг флагов командной строки
-func ParseFlag() (bool, bool, bool, string) {
-	flagFile := flag.Bool("f", false, "Флаг для отображения файлов")
-	flagDir := flag.Bool("d", false, "Флаг для отображения директорий")
-	flagLink := flag.Bool("sl", false, "Флаг для отображения символических ссылок")
-
-	flagEXT := flag.String("ext", "", "Флаг для отображения файлов с определенным расширением")
-
-	flag.Parse()
-
-	if !*flagFile && *flagEXT != "" {
-		fmt.Println("Ошибка: флаг -ext можно использовать только с флагом -f.")
-		fmt.Println("Usage: ~$ ./myFind -f -ext 'go' /go")
-		os.Exit(1)
-	}
-
-	if !*flagFile && !*flagDir && !*flagLink {
-		*flagFile = true
-		*flagDir = true
-		*flagLink = true
-	}
-
-	return *flagFile, *flagDir, *flagLink, *flagEXT
-}
 
 func WalkDirectory(root string, flagF, flagD, flagSL bool, flagEXT string) error {
 	return filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
