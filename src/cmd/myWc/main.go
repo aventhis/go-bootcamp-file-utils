@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	flagW, flagL, flagM := service.ParseFlagMyWc()
+	flagW, flagL, flagM := service.ParseFlagWc()
 
 	files := flag.Args()
 

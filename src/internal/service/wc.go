@@ -12,7 +12,7 @@ import (
 	"unicode/utf8"
 )
 
-func ParseFlagMyWc() (bool, bool, bool) {
+func ParseFlagWc() (bool, bool, bool) {
 	flagW := flag.Bool("w", false, "Флаг для подсчета слов")
 	flagL := flag.Bool("l", false, "Флаг для подсчета строк")
 	flagM := flag.Bool("m", false, "Флаг для подсчета символов")
