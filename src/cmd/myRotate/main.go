@@ -4,16 +4,34 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"sync"
 )
 
 func main() {
-	flagA := flag.String("a", "", "flag indicating the directory for archives")
+	archiveDir := flag.String("a", "", "Directory to store archive files")
 	flag.Parse()
 
-	if len(flag.Args()) != 1 {
+	files := flag.Args()
+	if len(files) < 1 {
 		fmt.Println("Usage: myRotate [-a <archive_directory>] <log_file1> [<log_file2> ...]")
 		os.Exit(1)
 	}
 
-	fmt.Println(*flagA)
+	var wg sync.WaitGroup
+
+	for _, file := range files {
+		wg.Add(1)
+		go func(file string) {
+			defer wg.Done()
+			if err := archiveFile(file, *archiveDir); err != nil {
+				fmt.Printf("Error archiving file %s: %s\n", file, err)
+			}
+		}(file)
+	}
+	wg.Wait()
+}
+
+func archiveFile(file string, archiveDir string) error {
+	// TODO: Реализовать архивирование
+	return nil
 }
