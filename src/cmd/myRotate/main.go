@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/aventhis/go-bootcamp-file-utils/src/internal/service"
 	"os"
 	"sync"
 )
@@ -23,15 +24,10 @@ func main() {
 		wg.Add(1)
 		go func(file string) {
 			defer wg.Done()
-			if err := archiveFile(file, *archiveDir); err != nil {
+			if err := service.ArchiveFile(file, *archiveDir); err != nil {
 				fmt.Printf("Error archiving file %s: %s\n", file, err)
 			}
 		}(file)
 	}
 	wg.Wait()
-}
-
-func archiveFile(file string, archiveDir string) error {
-	// TODO: Реализовать архивирование
-	return nil
 }
