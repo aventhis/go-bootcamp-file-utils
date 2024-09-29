@@ -84,8 +84,6 @@ Example:
 
 ### Exercise 02: Running Things
 
-### Exercise 02: Running Things
-
 In this exercise, you will implement a utility similar to `xargs`. The program will build and execute a command using input provided via standard input (`stdin`).
 
 #### Features
