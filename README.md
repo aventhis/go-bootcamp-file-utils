@@ -1,151 +1,127 @@
-# Day 02 - Go Boot camp
+# Go Boot Camp - Day 02
 
-## Not Invented Here Syndrome
-
-💡 [Tap here](https://new.oprosso.net/p/4cb31ec3f47a4596bc758ea1861fb624) **to leave your feedback on the project**. It's anonymous and will help our team make your educational experience better. We recommend completing the survey immediately after the project.
+This repository contains the solutions for the Go Boot Camp Day 02 tasks. The focus is on creating various command-line utilities using Go to handle file system operations, including file searching, counting, command execution, and log file archiving.
 
 ## Contents
 
-1. [Chapter I](#chapter-i) \
-    1.1. [General rules](#general-rules)
-2. [Chapter II](#chapter-ii) \
-    2.1. [Rules of the day](#rules-of-the-day)
-3. [Chapter III](#chapter-iii) \
-    3.1. [Intro](#intro)
-4. [Chapter IV](#chapter-iv) \
-    4.1. [Exercise 00: Finding Things](#exercise-00-finding-things)
-5. [Chapter V](#chapter-v) \
-    5.1. [Exercise 01: Counting Things](#exercise-01-counting-things)
-6. [Chapter VI](#chapter-vi) \
-    6.1. [Exercise 02: Running Things](#exercise-02-running-things)
-7. [Chapter VII](#chapter-vii) \
-    7.1. [Exercise 03: Archiving Things](#exercise-03-archiving-things)
+1. [Exercises](#exercises)
+    - [Exercise 00: Finding Things](#exercise-00-finding-things)
+    - [Exercise 01: Counting Things](#exercise-01-counting-things)
+    - [Exercise 02: Running Things](#exercise-02-running-things)
+    - [Exercise 03: Archiving Things](#exercise-03-archiving-things)
+2. [Usage](#usage)
 
 
-<h2 id="chapter-i" >Chapter I</h2>
-<h2 id="general-rules" >General rules</h2>
+## Exercises
 
-- Your programs should not quit unexpectedly (giving an error on a valid input). If this happens, your project will be considered non functional and will receive a 0 during the evaluation.
-- We encourage you to create test programs for your project even though this work won't have to be submitted and won't be graded. It will give you a chance to easily test your work and your peers' work. You will find those tests especially useful during your defence. Indeed, during defence, you are free to use your tests and/or the tests of the peer you are evaluating.
-- Submit your work to your assigned git repository. Only the work in the git repository will be graded.
-- If your code is using external dependencies, it should use [Go Modules](https://go.dev/blog/using-go-modules) for managing them
+### Exercise 00: Finding Things
 
-<h2 id="chapter-ii" >Chapter II</h2>
-<h2 id="rules-of-the-day" >Rules of the day</h2>
+This exercise involves implementing a utility similar to the `find` command. The program can locate directories, regular files, and symbolic links in a specified directory, with options to filter the output.
 
-- You should only turn in `*.go` files and (in case of external dependencies) `go.mod` + `go.sum`
-- Your code for this task should be buildable with just `go build`
+#### Features
 
-<h2 id="chapter-iii" >Chapter III</h2>
-<h2 id="intro" >Intro</h2>
+- Accepts a path and command-line options to find:
+    - Directories (`-d`)
+    - Regular files (`-f`)
+    - Symbolic links (`-sl`)
+- Optionally filters files by extension with `-ext` (only works when `-f` is specified).
+- Resolves symlinks and handles broken symlinks gracefully.
+- Skips files and directories that the current user doesn't have permission to access.
 
-It's really amazing how much you can do just using command line utilities! Pretty much any OS, including embedded ones, has its own CLI and a set of small programs to do magical things. As an example, you can read about [BusyBox](https://en.wikipedia.org/wiki/BusyBox), which is basically a swiss army knife for a variety of systems, starting with Linux-powered routers on OpenWRT and going to Android phones.
+#### Example Usage
 
-We're not trying to reinvent the wheel here, but knowing how to work with FS and perform basic CLI things in Golang can be really helpful, so let's spend some time on this.
+```bash
+# Find all files, directories, and symlinks in /foo
+./myFind /foo
 
-<h2 id="chapter-iv" >Chapter IV</h2>
-<h3 id="ex00">Exercise 00: Finding Things</h3>
+# Find only files with '.go' extension
+./myFind -f -ext 'go' /path/to/dir
 
-As a first step, let's implement `find`-like utility using Go. It has to accept some path and a set of command-line options to be able to locate different types of entries. We are interested in three types of entries, which are directories, regular files and symbolic links. So, we should be able to run our program like this:
-
-```
-# Finding all files/directories/symlinks recursively in directory /foo
-~$ ./myFind /foo
-/foo/bar
-/foo/bar/baz
-/foo/bar/baz/deep/directory
-/foo/bar/test.txt
-/foo/bar/buzz -> /foo/bar/baz
-/foo/bar/broken_sl -> [broken]
+# Find directories only
+./myFind -d /path/to/dir
 ```
 
-or specifying `-sl`, `-d` or `-f` to print only symlinks, only directories or only files. Keep in mind that user should be able to specify one, two or all three of them explicitly, like `./myFind -f -sl /path/to/dir` or `./myFind -d /path/to/other/dir`.
+### Exercise 01: Counting Things
 
-You should also implement one more option - `-ext` (works ONLY when -f is specified) for user to be able to print only files with a certain extension. An extension in this task can be thought of the last part of filename if we split it by a dot. So,
+This exercise implements a `wc`-like utility to gather basic statistics from text files.
 
-```
-# Finding only *.go files ignoring all the rest.
-~$ ./myFind -f -ext 'go' /go
-/go/src/github.com/mycoolproject/main.go
-/go/src/github.com/mycoolproject/magic.go
-```
+#### Features
 
-You'll also need to resolve symlinks. So, if `/foo/bar/buzz` is a symlink pointing to some other place in FS, like `/foo/bar/baz`, print both paths separated by `->`, like in example above. 
+- The utility supports three mutually exclusive flags:
+  - `-l` for counting lines.
+  - `-m` for counting characters.
+  - `-w` for counting words (default if no flag is specified).
+- If no flags are specified, the program defaults to word count (`-w`).
+- The utility can accept multiple input files and process them concurrently using goroutines for improved performance.
+- Handles UTF-8 encoded text files and supports both English and Russian. Other languages, such as Arabic, are not required to be handled for this exercise.
+- Ignores punctuation and considers spaces as the only word delimiters.
 
-Another thing about symlinks is that they may be broken (pointing to a non-existing file node). In this case your code should print `[broken]` instead of the path of a symlink destination.
+#### Example Usage
 
-Files and directories that current user doesn't have access to (permission errors) should be skipped in output and not lead to a runtime error.
+```bash
+# Count words in input.txt
+./myWc -w input.txt
 
-<h2 id="chapter-v" >Chapter V</h2>
-<h3 id="ex01">Exercise 01: Counting Things</h3>
+# Count lines in multiple files
+./myWc -l input2.txt input3.txt
 
-Now we are able to find our files, but we might need more meta information about what is in those files. Let's implement a `wc`-like utility to gather basic statistics about our files.
-
-First things first, let's assume our files are utf-8 encoded text files, so your code should work with texts in Russian, too (forget about special cases like Arabic for now, only English and Russian are required). Also, you may ignore punctuation and just consider spaces as the only word delimiters.
-
-You'll need to implement three mutually exclusive (only one can be specified at a time, otherwise an error message is printed) flags for your code: `-l` for counting lines, `-m` for counting characters and `-w` for counting words. Your program should be runnable like this:
-
-```
-# Counting words in file input.txt
-~$ ./myWc -w input.txt
-777 input.txt
-# Counting lines in files input2.txt and input3.txt
-~$ ./myWc -l input2.txt input3.txt
-42 input2.txt
-53 input3.txt
-# Counting characters in files input4.txt, input5.txt and input6.txt
-~$ ./myWc -m input4.txt input5.txt input6.txt
-1337 input4.txt
-2664 input5.txt
-3991 input6.txt
+# Count characters in files
+./myWc -m input4.txt input5.txt input6.txt
 ```
 
-As you may see, the answer is always a calculated number and a filename separated by tab (`\t`). If no flags are specified, `-w` behaviour should be used.
+#### Output Format
 
-**Important**: as all files are independent, you should utilize goroutines to process them concurrently. You can start as many goroutines as there are input files specified for the program.
+The output consists of a calculated number and the filename, separated by a tab (`\t`).
 
-<h2 id="chapter-vi" >Chapter VI</h2>
-<h3 id="ex02">Exercise 02: Running Things</h3>
-
-Do you know what `xargs` is? You can read about it [here](https://shapeshed.com/unix-xargs/), for example. Let's implement a similar tool - in this exercise you'll need to write a utility that will:
-
-1) treat all parameters as a command, like 'wc -l' or 'ls -la'
-2) build a command by appending all lines that are fed to program's stdin as this command's arguments, then execute it. So if we run
-
-```
-~$ echo -e "/a\n/b\n/c" | ./myXargs ls -la
+Example:
+```bash
+777    input.txt
+42     input2.txt
+53     input3.txt
+1337   input4.txt
+2664   input5.txt
+3991   input6.txt
 ```
 
-it should be an equivalent to running
+### Exercise 02: Running Things
 
-```
-~$ ls -la /a /b /c
-```
+### Exercise 02: Running Things
 
-You can test this tool together with those from previous Exercises, so
+In this exercise, you will implement a utility similar to `xargs`. The program will build and execute a command using input provided via standard input (`stdin`).
 
-```
-~$ ./myFind -f -ext 'log' /path/to/some/logs | ./myXargs ./myWc -l
-```
+#### Features
 
-will calculate line counts for all ".log" files in `/path/to/some/logs` directory recursively.
+1. The utility treats all command-line parameters as a command (e.g., `wc -l`, `ls -la`).
+2. It appends each line from the input (received via `stdin`) as arguments to the command and then executes it.
+3. Can be combined with other utilities to create complex workflows.
 
-<h2 id="chapter-vii" >Chapter VII</h2>
-<h3 id="ex03">Exercise 03: Archiving Things</h3>
+#### Example Usage
 
-The last tool that we'll implement for this day is log rotation tool. "Log rotation" is a process when the old log file is archived and put away for storage so logs wouldn't pile up in a single file indefinitely. It should work like this:
+```bash
+# Executes 'ls -la' on /a, /b, /c
+echo -e "/a\n/b\n/c" | ./myXargs ls -la
 
-```
-# Will create file /path/to/logs/some_application_1600785299.tag.gz
-# where 1600785299 is a UNIX timestamp made from `some_application.log`'s [MTIME](https://linuxize.com/post/linux-touch-command/)
-~$ ./myRotate /path/to/logs/some_application.log
+# Find '.log' files and count lines
+./myFind -f -ext 'log' /path/to/logs | ./myXargs ./myWc -l
 ```
 
-```
-# Will create two tar.gz files with timestamps (one for every log) 
-# and put them into /data/archive directory
-~$ ./myRotate -a /data/archive /path/to/logs/some_application.log /path/to/logs/other_application.log
-```
+### Exercise 03: Archiving Things
 
-As in Exercise 01, you should use goroutines to parallelize archiving of several files simultaneously.
+The final tool for this day is a log rotation utility. "Log rotation" refers to the process of archiving old log files and storing them separately to prevent logs from growing indefinitely in a single file.
 
+#### Features
+
+- Creates a `.tar.gz` archive of each specified log file.
+- The archive name is based on the original filename and the file's last modification time (mtime) represented as a UNIX timestamp.
+- Supports archiving multiple files at once, optionally specifying an output directory for the archives using the `-a` flag.
+- Utilizes goroutines to parallelize the archiving process, allowing for faster handling of multiple files.
+
+#### Example Usage
+
+```bash
+# Archive a single log file
+./myRotate /dataForTest/dataForMyRotate/app1.log
+
+# Archive multiple log files into a specific directory
+./myRotate -a /dataForTest/ /dataForTest/dataForMyRotate/app1.log /dataForTest/dataForMyRotate/app2.log
+```
