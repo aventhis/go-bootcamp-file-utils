@@ -12,7 +12,7 @@ import (
 )
 
 func ArchiveFile(file string, archiveDir string) error {
-	// TODO: Реализовать архивирование
+
 	fileInfo, err := os.Stat(file)
 	if err != nil {
 		return errors.New("файл не существует")

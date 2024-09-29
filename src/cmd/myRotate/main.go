@@ -17,7 +17,13 @@ func main() {
 		fmt.Println("Usage: myRotate [-a <archive_directory>] <log_file1> [<log_file2> ...]")
 		os.Exit(1)
 	}
-
+	// Проверяем, существует ли выходная директория, и создаем её, если не существует
+	if *archiveDir != "" {
+		if err := os.MkdirAll(*archiveDir, os.ModePerm); err != nil {
+			fmt.Println("Ошибка при создании директории")
+			os.Exit(1)
+		}
+	}
 	var wg sync.WaitGroup
 
 	for _, file := range files {
