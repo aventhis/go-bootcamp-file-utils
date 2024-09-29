@@ -9,7 +9,6 @@ This repository contains the solutions for the Go Boot Camp Day 02 tasks. The fo
     - [Exercise 01: Counting Things](#exercise-01-counting-things)
     - [Exercise 02: Running Things](#exercise-02-running-things)
     - [Exercise 03: Archiving Things](#exercise-03-archiving-things)
-2. [Usage](#usage)
 
 
 ## Exercises
